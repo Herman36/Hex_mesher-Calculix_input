@@ -178,6 +178,7 @@ f.write("*NODE PRINT, NSET=Nall, FREQUENCY=1\nU\n")
 f.write("*EL PRINT, ELSET=Eall, FREQUENCY=1\nS,E\n")
 f.write("*NODE FILE, FREQUENCY=1\nU\n")
 f.write("*EL FILE, FREQUENCY=1\nS,E\n")
+f.write("*END STEP")
 
 
 
