@@ -38,6 +38,8 @@ grid = np.array([3,3,1])
 gap = np.array([10,10])
 quad = False
 dispM = False
+
+
 gap_drct = 'none'
 node, element = hex_mesh(option, size, grid, gap, gap_drct, quad, dispM)
 
@@ -71,6 +73,10 @@ Gap_cond = False
 
 # springs yes no?
 # spring properties
+
+E = 210e3       #Young's Modulus
+nu = 0.3        #Poisson ratio
+
 
 #-----------------------------------------------------------------------------#
 # Specifying variables to be used in writing file
@@ -207,12 +213,15 @@ f.write("%.2E\n" % expans)
 f.write("*SPECIFIC HEAT\n")
 f.write("%8.3f\n\n" % spec_heat)
 
+# Assigning material properties
+f.write("*MATERIAL,NAME=EL\n")
+f.write("*ELASTIC\n")
+f.write("%8.3f, %8.4f\n\n" % (E, nu))
+
 # Assigning Material Properties to Elements
 f.write("*SOLID SECTION,ELSET=Eall,MATERIAL=EL\n\n")
 
 # Specify contact properties
-
-
 
 # Add Amplitudes if applicable
 
@@ -230,6 +239,7 @@ f.write("*EL PRINT, ELSET=Eall, FREQUENCY=1\nS,E\n")
 f.write("*NODE FILE, FREQUENCY=1\nU\n")
 f.write("*EL FILE, FREQUENCY=1\nS,E\n")
 f.write("*END STEP")
+
 
 f.close()
 
