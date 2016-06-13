@@ -188,5 +188,7 @@ f.write("*NODE FILE, FREQUENCY=1\nU\n")
 f.write("*EL FILE, FREQUENCY=1\nS,E\n")
 f.write("*END STEP")
 
+
+
 f.close()
 
