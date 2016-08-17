@@ -80,6 +80,8 @@ spring_linear = True
 spring_const = 1       # can extend to force, elongation and temperature
 # add for non linear spring properties
 
+
+
 #-----------------------------------------------------------------------------#
 # Specifying variables to be used in writing file
 # Element types
@@ -372,6 +374,7 @@ if (contact is True) and (option == 3):
         f.write("%.2E,%.2E\n" % (c0, p0))
 
     f.write("\n")
+
 
 # Add Amplitudes if applicable
 

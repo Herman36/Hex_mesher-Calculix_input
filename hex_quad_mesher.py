@@ -428,7 +428,7 @@ def hex_mesh_quad(option, size, grid, gap, gap_drct, dispM):
             # defining elements
             ele_num = l*t*h
             element = np.zeros(shape=(ele_num, 21))
-            (zebra = 0
+            zebra = 0
             for k in range(0, h, 1):
                 for m in range(0, t, 1):
                     for n in range(0, l, 1):
