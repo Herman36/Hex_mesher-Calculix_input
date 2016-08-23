@@ -412,8 +412,8 @@ el6_y_p,el9_y_n
 *STATIC
 0.001, 1., 0.001, 0.009
 *BOUNDARY
-cube9,1,1,-30
-cube9,2,2,-30
+cubes_x_max,1,1,-30
+cubes_y_max,2,2,-30
 
 **Specify output 
 *NODE PRINT, NSET=Nall, FREQUENCY=1

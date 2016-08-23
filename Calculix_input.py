@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+
 """
 Created on Thu May 26 12:53:58 2016
 
@@ -35,11 +35,11 @@ from hex_mesher import hex_mesh
     #element center co-ordinates    =   el_center   matrix
 
 option = 3
-size = np.array([500, 500, 700])   # units is mm, adjust Material prop for m
-grid = np.array([3, 3, 1])
-gap = np.array([10, 10])
+size = np.array([500, 500, 700])   # units in mm, adjust Material prop for m
+grid = np.array([5, 5, 1])
+gap = np.array([250, 250])
 quad = False
-dispM = False
+dispM = True
 gap_drct = 'xy'
 node, element = hex_mesh(option, size, grid, gap, gap_drct, quad, dispM)
 
@@ -65,6 +65,7 @@ analysis = 'disp'   # specifying what is prescribed
 
 # Contact Specifications
 contact = True
+contact_d = False
 contact_option = 1
 contact_type = ["LINEAR", "EXPONENTIAL", "TIED"]
 slope_K = 1e7
@@ -75,12 +76,10 @@ mu = 0.2        # Usually between 0.1 and 0.5
 lmbda = 5000    # Usually tn times smaler than spring constant
 
 # Stabilising Springs
-s_springs = True
+s_springs = False
 spring_linear = True
 spring_const = 1       # can extend to force, elongation and temperature
 # add for non linear spring properties
-
-
 
 #-----------------------------------------------------------------------------#
 # Specifying variables to be used in writing file
@@ -346,6 +345,58 @@ def write_y_gap(f, grid):
             f.write("el%i_y_p,el%i_y_n\n" % (gap_count, gap_count+grid[0]))
             gap_count += 1
 
+
+def write_x_gapd(f, grid):
+    gap_count = 1
+    for lamb in range(1, grid[0], 1):
+        f.write("*CONTACT PAIR,INTERACTION=SI1,TYPE=SURFACE TO SURFACE\n")
+        f.write("el%i_x_p,el%i_x_n\n" % (gap_count, gap_count+1))
+        f.write("*CONTACT PAIR,INTERACTION=SI1,TYPE=SURFACE TO SURFACE\n")
+        f.write("el%i_x_p,el%i_x_n\n" % (gap_count, gap_count+grid[0]+1))
+        gap_count += 1
+    for calf in range(1, grid[1]-1, 1):
+        gap_count += 1
+        for lamb in range(1, grid[0], 1):
+            f.write("*CONTACT PAIR,INTERACTION=SI1,TYPE=SURFACE TO SURFACE\n")
+            f.write("el%i_x_p,el%i_x_n\n" % (gap_count, gap_count-grid[0]+1))
+            f.write("*CONTACT PAIR,INTERACTION=SI1,TYPE=SURFACE TO SURFACE\n")
+            f.write("el%i_x_p,el%i_x_n\n" % (gap_count, gap_count+1))
+            f.write("*CONTACT PAIR,INTERACTION=SI1,TYPE=SURFACE TO SURFACE\n")
+            f.write("el%i_x_p,el%i_x_n\n" % (gap_count, gap_count+grid[0]+1))
+            gap_count += 1
+    gap_count += 1
+    for lamb in range(1, grid[0], 1):
+        f.write("*CONTACT PAIR,INTERACTION=SI1,TYPE=SURFACE TO SURFACE\n")
+        f.write("el%i_x_p,el%i_x_n\n" % (gap_count, gap_count-grid[0]+1))
+        f.write("*CONTACT PAIR,INTERACTION=SI1,TYPE=SURFACE TO SURFACE\n")
+        f.write("el%i_x_p,el%i_x_n\n" % (gap_count, gap_count+1))
+        gap_count += 1
+# for y direction gaps
+
+
+def write_y_gapd(f, grid):
+    gap_count = 1
+    for calf in range(1, grid[1], 1):
+        f.write("*CONTACT PAIR,INTERACTION=SI1,TYPE=SURFACE TO SURFACE\n")
+        f.write("el%i_y_p,el%i_y_n\n" % (gap_count, gap_count+grid[0]))
+        f.write("*CONTACT PAIR,INTERACTION=SI1,TYPE=SURFACE TO SURFACE\n")
+        f.write("el%i_y_p,el%i_y_n\n" % (gap_count, gap_count+grid[0]+1))
+        gap_count += 1
+        for lamb in range(1, grid[0]-1, 1):
+            f.write("*CONTACT PAIR,INTERACTION=SI1,TYPE=SURFACE TO SURFACE\n")
+            f.write("el%i_y_p,el%i_y_n\n" % (gap_count, gap_count+grid[0]-1))
+            f.write("*CONTACT PAIR,INTERACTION=SI1,TYPE=SURFACE TO SURFACE\n")
+            f.write("el%i_y_p,el%i_y_n\n" % (gap_count, gap_count+grid[0]))
+            f.write("*CONTACT PAIR,INTERACTION=SI1,TYPE=SURFACE TO SURFACE\n")
+            f.write("el%i_y_p,el%i_y_n\n" % (gap_count, gap_count+grid[0]+1))
+            gap_count += 1
+        f.write("*CONTACT PAIR,INTERACTION=SI1,TYPE=SURFACE TO SURFACE\n")
+        f.write("el%i_y_p,el%i_y_n\n" % (gap_count, gap_count+grid[0]-1))
+        f.write("*CONTACT PAIR,INTERACTION=SI1,TYPE=SURFACE TO SURFACE\n")
+        f.write("el%i_y_p,el%i_y_n\n" % (gap_count, gap_count+grid[0]))
+        gap_count += 1
+
+
 if (contact is True) and (option == 3):
     for sheep in element[:, 0]:
         f.write("*SURFACE,NAME=el%i_x_p\n" % sheep)
@@ -357,13 +408,20 @@ if (contact is True) and (option == 3):
         f.write("*SURFACE,NAME=el%i_y_n\n" % sheep)
         f.write("%i,S3\n" % sheep)
 
-    if gap_drct == 'x':
+    if (gap_drct == 'x') and (contact_d is False):
         write_x_gap(f, grid)
-    elif gap_drct == 'y':
+    elif (gap_drct == 'y') and (contact_d is False):
         write_y_gap(f, grid)
-    else:
+    elif (gap_drct == 'xy') and (contact_d is False):
         write_x_gap(f, grid)
         write_y_gap(f, grid)
+    elif (gap_drct == 'x') and (contact_d is True):
+        write_x_gapd(f, grid)
+    elif (gap_drct == 'y') and (contact_d is True):
+        write_y_gapd(f, grid)
+    elif (gap_drct == 'xy') and (contact_d is True):
+        write_x_gapd(f, grid)
+        write_y_gapd(f, grid)
 
     f.write("*SURFACE INTERACTION,NAME=SI1\n")
     f.write("*SURFACE BEHAVIOR,PRESSURE-OVERCLOSURE=%s\n"
@@ -375,7 +433,6 @@ if (contact is True) and (option == 3):
 
     f.write("\n")
 
-
 # Add Amplitudes if applicable
 
 # Allocating the analysis properties: type, step size, and loadings
@@ -383,10 +440,9 @@ f.write("*STEP, INC=10000, NLGEOM\n")
 f.write("*STATIC\n")  # static analysis with manual incrementation
 f.write("0.001, 1., 0.001, 0.009\n")
 f.write("*BOUNDARY\n")
-#f.write("cubes_x_max,1,1,-30\n")
-#f.write("cubes_y_max,2,2,-30\n")
-f.write("cube9,1,1,-30\n")
-f.write("cube9,2,2,-30\n")
+f.write("cubes_x_max,1,1,-30\n")
+f.write("cubes_y_max,2,2,-30\n")
+#f.write("cube9,2,2,-30\n")
 f.write("\n")
 # Writing output files
 f.write("**Specify output \n")
@@ -395,6 +451,5 @@ f.write("*EL PRINT, ELSET=Eall, FREQUENCY=1\nS,E\n")
 f.write("*NODE FILE, FREQUENCY=1\nU\n")
 f.write("*EL FILE, FREQUENCY=1\nS,E\n")
 f.write("*END STEP")
-
 
 f.close()
